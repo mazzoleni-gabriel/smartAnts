@@ -159,11 +159,11 @@ class Ant:
 
 
 
-size = 70
+size = 100
 allAnts = []
 ants = []
 aliveAnts = []
-nAnts = 200
+nAnts = 500
 probDead = 85
 radius = 1
 ambient = []
@@ -221,20 +221,18 @@ def printAmbient():
 
 def updateAmbient():
     resetAmbient()
-    for i in range(size):
-        for j in range (size):
-            for k in range(nAnts):
-                if(allAnts[k].y == i and allAnts[k].x == j):
-                    if(allAnts[k].dead):
-                    	if ambient[i][j] != 2 and ambient[i][j] != 3:
-                        	ambient[i][j] = 1
-                    else:
-                        if not allAnts[k].carrying is None:
-                            ambient[i][j] = 3
-                        else:
-                            ambient[i][j] = 2
+    for k in range(nAnts):
+        if allAnts[k].dead:
+            if ambient[ allAnts[k].y-1 ][ allAnts[k].x-1 ] != 2 and ambient[ allAnts[k].y-1 ][ allAnts[k].x-1 ] != 3:
+                ambient[ allAnts[k].y-1][ allAnts[k].x-1 ] = 1
+        else:
+            if not allAnts[k].carrying is None:
+                ambient[ allAnts[k].y-1 ][ allAnts[k].x-1 ] = 3
+            else:
+                ambient[ allAnts[k].y-1 ][ allAnts[k].x-1 ] = 2
 
 def drawAmbient():
+    # Draw lines
 	# for i in range(size):
 	# 	pygame.draw.line(screen, white, [0, i*1000/size], [size*100, i*1000/size], (1))
 	# 	pygame.draw.line(screen, white, [i*1000/size, 0], [i*1000/size, size*100], (1))
