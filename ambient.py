@@ -95,7 +95,7 @@ class Ant:
     def leaveProb(self): #Only works with radius 1 by now || Returns the prob of leave an ant
         if self.dead:
             return 0
-        sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1 
+        sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1
         nDead = 0
         if self.x - 1 < 0:
             upX = size
@@ -164,7 +164,7 @@ allAnts = []
 ants = []
 aliveAnts = []
 nAnts = 500
-probDead = 85
+probDead = 80
 radius = 1
 ambient = []
 noise = 0.01
