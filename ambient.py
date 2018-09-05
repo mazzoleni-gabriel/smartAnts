@@ -12,6 +12,9 @@ class Ant:
         self.carried = False
         self.carrying = None
         self.lastMove = None
+        self.label = 1
+        self.data1 = 0.0
+        self.data2 = 0.0
 
     def randPosition(self,size):
         return randint(0, size)
@@ -96,7 +99,6 @@ class Ant:
         if self.dead:
             return 0
         sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1
-        # sizeRadius = 4
         nDead = 0
         if self.x - 1 < 0:
             upX = size
@@ -114,25 +116,54 @@ class Ant:
             rightY = 0
         else:
             rightY = self.y + 1
-        if isDead(upX,leftY): nDead = nDead + 1
-        if isDead(upX,self.y): nDead = nDead + 1
-        if isDead(upX,rightY): nDead = nDead + 1
-        if isDead(self.x,leftY): nDead = nDead + 1
+        if isDead(upX,leftY,self.carrying.label): nDead = nDead + 1
+        if isDead(upX,self.y,self.carrying.label): nDead = nDead + 1
+        if isDead(upX,rightY,self.carrying.label): nDead = nDead + 1
+        if isDead(self.x,leftY,self.carrying.label): nDead = nDead + 1
         # if self.isDead(self.x,self.y): nDead = nDead + 1
-        if isDead(self.x,rightY): nDead = nDead + 1
-        if isDead(downX,leftY): nDead = nDead + 1
-        if isDead(downX,self.y): nDead = nDead + 1
-        if isDead(downX,rightY): nDead = nDead + 1
+        if isDead(self.x,rightY,self.carrying.label): nDead = nDead + 1
+        if isDead(downX,leftY,self.carrying.label): nDead = nDead + 1
+        if isDead(downX,self.y,self.carrying.label): nDead = nDead + 1
+        if isDead(downX,rightY,self.carrying.label): nDead = nDead + 1
         return nDead/sizeRadius
 
     def carryProb(self):
-        return 1 - self.leaveProb()
+        if self.dead:
+            return 0
+        sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1
+        nDead = 0
+        if self.x - 1 < 0:
+            upX = size
+        else:
+            upX = self.x - 1
+        if self.x + 1 > size:
+            downX = 0
+        else:
+            downX = self.x + 1
+        if self.y - 1 < 0:
+            leftY = size
+        else:
+            leftY = self.y - 1
+        if self.y + 1 > size:
+            rightY = 0
+        else:
+            rightY = self.y + 1
+        if self.isDead(upX,leftY): nDead = nDead + 1
+        if self.isDead(upX,self.y): nDead = nDead + 1
+        if self.isDead(upX,rightY): nDead = nDead + 1
+        if self.isDead(self.x,leftY): nDead = nDead + 1
+        # if self.isDead(self.x,self.y): nDead = nDead + 1
+        if self.isDead(self.x,rightY): nDead = nDead + 1
+        if self.isDead(downX,leftY): nDead = nDead + 1
+        if self.isDead(downX,self.y): nDead = nDead + 1
+        if self.isDead(downX,rightY): nDead = nDead + 1
+        return 1 - nDead/sizeRadius
 
     def decision(self):
         # print(( self.leaveProb() + noise )*100)
         if self.dead:
             return;
-        if self.carrying is None and isDead(self.x, self.y): #Can carry one
+        if self.carrying is None and self.isDead(self.x, self.y): #Can carry one
             if self.lottery(( self.carryProb() + noise )*100):
                 self.carry()
                 return;
@@ -166,24 +197,28 @@ class Ant:
 
 
 
-size = 50
+size = 40
 allAnts = []
 ants = []
 aliveAnts = []
 nAnts = size*5
-probDead = 70
+probDead = 75
 radius = 1
 ambient = []
 ambientDead = []
 noise = -0.05
 maxIteractions = size*300
+minDead = 200
 
 #Colors
-green = (0,50,0)
+darkGreen = (0,30,0)
 white = (200,200,200)
 darkBlue = (0,0,128)
 grey = (100,100,100)
 lightGrey = (150,150,150)
+yellow = (212,175,55)
+red = (255, 0, 0)
+green = (0,255,0)
 
 #Moves
 UP = 'U'
@@ -193,10 +228,16 @@ RIGHT = 'R'
 
 screen = pygame.display.set_mode((1000,1000))
 
-def isDead(x,y):
-    if(ambientDead[y-1][x-1] is None):
-        return False
-    return True
+#--------------------READ FILE----------------------
+
+
+#---------------------------------------------------
+
+def isDead(x,y,label):
+    if not ambientDead[y-1][x-1] is None: 
+        if ambientDead[y-1][x-1].label == label:
+            return True
+    return False
     # for i in range(len(ants)):
     #     if ants[i].x == x and ants[i].y == y and ants[i].dead:
     #         return True
@@ -218,6 +259,20 @@ def initAmbient():
         else:
             ants.append(ant)
         allAnts.append(ant)
+    while len(ants) < minDead:
+        ant = Ant(size, probDead, radius)
+        ant.dead = True
+        ant.setPosition()
+        ants.append(ant)
+        allAnts.append(ant)
+    for j in range(len(ants)):
+            if j > (len(ants)/4):
+                ants[j].label = 2
+            if j > (len(ants)/4)*2:
+                ants[j].label = 3
+            if j > (len(ants)/4)*3:
+                ants[j].label = 4
+
 
 
 def resetAmbient():
@@ -250,13 +305,13 @@ def updateAmbient():
     resetAmbient()
     for i in range(len(ants)):
         if( ants[i].carried == False):
-            ambient[ ants[i].y - 1][ ants[i].x - 1 ] = 1
+            ambient[ ants[i].y - 1][ ants[i].x - 1 ] = ants[i].label
             ambientDead[ ants[i].y - 1][ ants[i].x - 1] = ants[i]
     for i in range(len(aliveAnts)):
         if not aliveAnts[i].carrying is None:
-            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 3
+            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 6
         else:
-            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 2
+            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 5
 
 
     # for k in range(nAnts):
@@ -274,21 +329,29 @@ def drawAmbient():
 	# for i in range(size):
 	# 	pygame.draw.line(screen, white, [0, i*1000/size], [size*100, i*1000/size], (1))
 	# 	pygame.draw.line(screen, white, [i*1000/size, 0], [i*1000/size, size*100], (1))
-	screen.fill( green )
-	for i in range(size):
-		for j in range(size):
-			if ambient[i][j] == 2:
-				pygame.draw.rect(screen, darkBlue, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-			if ambient[i][j] == 1:
-				pygame.draw.rect(screen, grey, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-			if ambient[i][j] == 3:
-				pygame.draw.rect(screen, darkBlue, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-				pygame.draw.rect(screen, lightGrey, (i*1000/size + 200/size,j*1000/size + 200/size,600/size,600/size), 0)
+    screen.fill( darkGreen )
+    for i in range(size):
+        for j in range(size):
+            if ambient[i][j] == 5:
+                pygame.draw.rect(screen, darkBlue, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            if ambient[i][j] == 1:
+                pygame.draw.rect(screen, grey, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            if ambient[i][j] == 2:
+                pygame.draw.rect(screen, yellow, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            if ambient[i][j] == 3:  
+                pygame.draw.rect(screen, red, (i*1000/size,j*1000/size,1000/size,1000/size), 0)  
+            if ambient[i][j] == 4:
+                pygame.draw.rect(screen, green, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            if ambient[i][j] == 6:
+                pygame.draw.rect(screen, darkBlue, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+                pygame.draw.rect(screen, lightGrey, (i*1000/size + 200/size,j*1000/size + 200/size,600/size,600/size), 0)
 
 
 
 def main():
     initAmbient()
+    print(len(ants))
+    print(len(aliveAnts))
     for k in range(maxIteractions):
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
