@@ -14,10 +14,10 @@ class Ant:
         self.lastMove = None
 
     def randPosition(self,size):
-        return randrange(0, size)
+        return randint(0, size)
 
     def lottery(self, prob):
-        return False if randrange(0, 100) > prob else True
+        return False if randint(0, 100) > prob else True
 
     def setPosition(self):
         if not self.dead:
@@ -142,35 +142,41 @@ class Ant:
                 return;
 
     def carry(self):
-        for i in range(len(ants)):
-            if(ants[i].x == self.x and ants[i].y == self.y):
-                ants[i].carried = True
-                self.carrying = ants[i]
-                return;
+        ambientDead[self.y - 1][self.x - 1].carried = True
+        self.carrying = ambientDead[self.y - 1][self.x - 1]
+        # for i in range(len(ants)):
+        #     if(ants[i].x == self.x and ants[i].y == self.y):
+        #         ants[i].carried = True
+        #         self.carrying = ants[i]
+        #         return;
 
     def leave(self):
         self.carrying.carried = False
         self.carrying = None  
 
     def isDead(self,x,y):
-        for i in range(len(ants)):
-            if ants[i].x == x and ants[i].y == y and ants[i].dead and ants[i] != self.carrying:
-                return True
+        if(not ambientDead[y-1][x-1] is None and ambientDead[y-1][x-1] != self.carrying):
+            return True
         return False
+        # for i in range(len(ants)):
+        #     if ants[i].x == x and ants[i].y == y and ants[i].dead and ants[i] != self.carrying:
+        #         return True
+        # return False
 
 
 
 
-size = 100
+size = 50
 allAnts = []
 ants = []
 aliveAnts = []
-nAnts = 2000
+nAnts = size*5
 probDead = 70
 radius = 1
 ambient = []
+ambientDead = []
 noise = -0.05
-maxIteractions = 5000
+maxIteractions = size*300
 
 #Colors
 green = (0,50,0)
@@ -188,17 +194,23 @@ RIGHT = 'R'
 screen = pygame.display.set_mode((1000,1000))
 
 def isDead(x,y):
-    for i in range(len(ants)):
-        if ants[i].x == x and ants[i].y == y and ants[i].dead:
-            return True
-    return False
+    if(ambientDead[y-1][x-1] is None):
+        return False
+    return True
+    # for i in range(len(ants)):
+    #     if ants[i].x == x and ants[i].y == y and ants[i].dead:
+    #         return True
+    # return False
 
 def initAmbient():
     for i in range(size):
         line = []
+        lineDead = []
         for j in range(size):
             line.append(0)
+            lineDead.append(None)
         ambient.append(line)
+        ambientDead.append(lineDead)
     for j in range(nAnts):
         ant = Ant(size, probDead, radius)
         if not ant.dead:
@@ -211,7 +223,13 @@ def initAmbient():
 def resetAmbient():
     for i in range(size):
         for j in range (size):
-        	ambient[i][j] = 0
+            ambient[i][j] = 0
+            ambientDead[i][j] = None
+
+def resetDead():
+    for i in range(size):
+        for j in range (size):
+            ambientDead[i][j] = None
 
 def printAmbient():
     for i in range(size): #i = y
@@ -222,10 +240,18 @@ def printAmbient():
                 print("%d " %ambient[i][j], end = "")
     print()
 
+def updateDead():
+    resetDead()
+    for i in range(len(ants)):
+        if( ants[i].carried == False):
+            ambientDead[ ants[i].y - 1][ ants[i].x - 1] = ants[i]
+
 def updateAmbient():
     resetAmbient()
     for i in range(len(ants)):
-    	ambient[ ants[i].y-1][ ants[i].x-1 ] = 1
+        if( ants[i].carried == False):
+            ambient[ ants[i].y - 1][ ants[i].x - 1 ] = 1
+            ambientDead[ ants[i].y - 1][ ants[i].x - 1] = ants[i]
     for i in range(len(aliveAnts)):
         if not aliveAnts[i].carrying is None:
             ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 3
@@ -267,17 +293,28 @@ def main():
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
             aliveAnts[i].decision()
-        print(k)
-    while(1): 
+            updateDead()
+            # updateAmbient()
+            # pygame.display.update()
+            # drawAmbient() 
+        # print(k)
+    while(len(aliveAnts)>0): 
         if(aliveAnts[0].carrying is None):
             aliveAnts.pop(0)
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
             aliveAnts[i].decision()
+        updateAmbient()
         pygame.display.update()
         drawAmbient() 
-        updateAmbient()
+        
         # else : print(iterations)
         # time.sleep(1)
+    while(1):
+        updateAmbient()
+        pygame.display.update()
+        drawAmbient() 
+        print(len(aliveAnts))
+        time.sleep(100)
 
 main()
