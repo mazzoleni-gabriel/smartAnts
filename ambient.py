@@ -150,15 +150,16 @@ class Ant:
             rightY = 0
         else:
             rightY = self.y + 1
-        if self.isDead(upX,leftY): nDead = nDead + 1
-        if self.isDead(upX,self.y): nDead = nDead + 1
-        if self.isDead(upX,rightY): nDead = nDead + 1
-        if self.isDead(self.x,leftY): nDead = nDead + 1
-        # if self.isDead(self.x,self.y): nDead = nDead + 1
-        if self.isDead(self.x,rightY): nDead = nDead + 1
-        if self.isDead(downX,leftY): nDead = nDead + 1
-        if self.isDead(downX,self.y): nDead = nDead + 1
-        if self.isDead(downX,rightY): nDead = nDead + 1
+        if not ambientDead[self.x-1][self.y-1] is None:
+            if isDead(upX,leftY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if isDead(upX,self.y,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if isDead(upX,rightY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if isDead(self.x,leftY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            # if self.isDead(self.x,self.y): nDead = nDead + 1
+            if isDead(self.x,rightY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if isDead(downX,leftY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if isDead(downX,self.y,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if isDead(downX,rightY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
         return 1 - nDead/sizeRadius
 
     def decision(self):
@@ -211,6 +212,7 @@ ambientDead = []
 noise = -0.01
 maxIteractions = 500000
 minDead = 200
+alpha = 1.5
 
 #Colors
 darkGreen = (0,30,0)
@@ -255,7 +257,9 @@ def isDead(x,y,label):
     # return False
 
 def euclidean(x1,x2,y1,y2):
-    return distance.euclidean([x1,y1],[x2,y2])
+    a = [x1,y1]
+    b = [x2,y2]
+    return 1 - (distance.euclidean(a,b)/alpha)
 
 def initAmbient():
     for i in range(size):
