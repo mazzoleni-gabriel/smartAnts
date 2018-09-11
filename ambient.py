@@ -1,7 +1,8 @@
 #import numpy as np
 from random import *
 import time
-import sys, pygame 
+import sys, pygame
+import csv
 from pygame.locals import * 
 
 class Ant:
@@ -202,12 +203,12 @@ allAnts = []
 ants = []
 aliveAnts = []
 nAnts = size*5
-probDead = 75
+probDead = 90
 radius = 1
 ambient = []
 ambientDead = []
-noise = -0.05
-maxIteractions = size*300
+noise = -0.01
+maxIteractions = 500000
 minDead = 200
 
 #Colors
@@ -229,7 +230,16 @@ RIGHT = 'R'
 screen = pygame.display.set_mode((1000,1000))
 
 #--------------------READ FILE----------------------
-
+def readFile():
+    cont = 0;
+    with open('data.csv', newline = '') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter = ' ', quotechar=',')
+        for row in spamreader:
+            linha = row[0].split(",")
+            ants[cont].data1 = float(linha[0])
+            ants[cont].data2 = float(linha[1])
+            ants[cont].label = int(linha[2])
+            cont = cont + 1
 
 #---------------------------------------------------
 
@@ -265,13 +275,8 @@ def initAmbient():
         ant.setPosition()
         ants.append(ant)
         allAnts.append(ant)
-    for j in range(len(ants)):
-            if j > (len(ants)/4):
-                ants[j].label = 2
-            if j > (len(ants)/4)*2:
-                ants[j].label = 3
-            if j > (len(ants)/4)*3:
-                ants[j].label = 4
+
+    # readFile()
 
 
 
@@ -352,18 +357,26 @@ def main():
     initAmbient()
     print(len(ants))
     print(len(aliveAnts))
+    updateAmbient()
+    pygame.display.update()
+    drawAmbient() 
+    pygame.image.save(screen,"deadAnts-init.png")
     for k in range(maxIteractions):
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
             aliveAnts[i].decision()
             updateDead()
-            # updateAmbient()
-            # pygame.display.update()
-            # drawAmbient() 
-        # print(k)
+        if k%100000 == 0:
+            updateAmbient()
+            pygame.display.update()
+            drawAmbient() 
+            pygame.image.save(screen,"deadAnts-" + str(k) + ".png")
+            # print(k)
     while(len(aliveAnts)>0): 
-        if(aliveAnts[0].carrying is None):
-            aliveAnts.pop(0)
+        for j in range(len(aliveAnts)-1, -1, -1):
+            print(j)
+            if(aliveAnts[j].carrying is None):
+                aliveAnts.pop(j)
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
             aliveAnts[i].decision()
@@ -377,6 +390,7 @@ def main():
         updateAmbient()
         pygame.display.update()
         drawAmbient() 
+        pygame.image.save(screen,"deadAnts-final.png")
         print(len(aliveAnts))
         time.sleep(100)
 
