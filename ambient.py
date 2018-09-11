@@ -5,6 +5,7 @@ import sys, pygame
 import csv
 from pygame.locals import * 
 from scipy.spatial import distance
+import math
 
 class Ant:
     def __init__(self, size, prob, radius):
@@ -171,22 +172,24 @@ class Ant:
             else: 
                 flag = 0
 
-
-        f = ((1/alpha) + soma) * flag
+        # print(soma)
+        f = ((1/(pow(sigma,2))) * soma) * flag
         # print(f)
         if f < 0:
             f = 0
         if f >= 1:
+            # print(f)
             return 1
-        return (f*f*f*f)
+        return (pow(f,4))
 
 
     def carryProb(self):
         if self.dead:
             return 0
         sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1
-        soma = 0 
+        soma = 0.0
         flag = 1
+        a=0.0
         if self.x - 1 < 0:
             upX = size
         else:
@@ -203,7 +206,8 @@ class Ant:
             rightY = 0
         else:
             rightY = self.y + 1
-        if not ambientDead[self.x-1][self.y-1] is None:
+
+        if not ambientDead[self.y-1][self.x-1] is None:
             if self.isDead(upX,leftY):
                 a = euclidean(ambientDead[leftY-1][upX-1].data1,ambientDead[leftY-1][upX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
                 if a > 0:
@@ -253,13 +257,14 @@ class Ant:
                     soma = soma + a
                 else: 
                     flag = 0
-        f = ((1/alpha) + soma) * flag
+        f = ((1/(pow(sigma,2))) * soma) * flag
+        # print(soma)
         # print(f)
         if f < 0:
             f = 0
         if f <= 1:
             return 1
-        return 1/(f*f)
+        return 1/(pow(f,2))
 
     def decision(self):
         # print(( self.leaveProb() + noise )*100)
@@ -267,10 +272,12 @@ class Ant:
             return;
         if self.carrying is None and self.isDead(self.x, self.y): #Can carry one
             if self.lottery(( self.carryProb() + noise )*100):
+                # print(self.carryProb())
                 self.carry()
                 return;
         if not self.carrying is None and not self.isDead(self.x, self.y):
             if self.lottery(( self.leaveProb() + noise )*100):
+                # print(self.leaveProb())
                 self.leave()
                 return;
 
@@ -299,19 +306,20 @@ class Ant:
 
 
 
-size = 40
+size = 50
 allAnts = []
 ants = []
 aliveAnts = []
-nAnts = size*5
-probDead = 90
+nAnts = 21
+probDead = 0
 radius = 1
 ambient = []
 ambientDead = []
 noise = -0.01
-maxIteractions = 500000
-minDead = 200
-alpha = 35
+maxIteractions = 1000000
+minDead = 400
+alpha = 10
+sigma = 2
 
 #Colors
 darkGreen = (0,30,0)
@@ -334,7 +342,7 @@ screen = pygame.display.set_mode((1000,1000))
 #--------------------READ FILE----------------------
 def readFile():
     cont = 0;
-    with open('data.csv', newline = '') as csvfile:
+    with open('data2.csv', newline = '') as csvfile:
         spamreader = csv.reader(csvfile, delimiter = ' ', quotechar=',')
         for row in spamreader:
             linha = row[0].split(",")
@@ -355,10 +363,12 @@ def isDead(x,y,label):
     #         return True
     # return False
 
-def euclidean(x1,y1,x2,y2):
+def euclidean(y1,x1,y2,x2):
     a = [x1,y1]
     b = [x2,y2]
-    return 1 - (distance.euclidean(a,b)/alpha)
+    # print(distance.euclidean(b,a))
+    # d = math.sqrt(pow(x2-x1,2) + pow(y2-y1,2))
+    return 1 - (distance.euclidean(b,a)/alpha)
 
 def initAmbient():
     for i in range(size):
