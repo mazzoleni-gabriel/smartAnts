@@ -101,7 +101,8 @@ class Ant:
         if self.dead:
             return 0
         sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1
-        nDead = 0
+        soma = 0.0
+        flag = 1
         if self.x - 1 < 0:
             upX = size
         else:
@@ -118,22 +119,74 @@ class Ant:
             rightY = 0
         else:
             rightY = self.y + 1
-        if isDead(upX,leftY,self.carrying.label): nDead = nDead + 1
-        if isDead(upX,self.y,self.carrying.label): nDead = nDead + 1
-        if isDead(upX,rightY,self.carrying.label): nDead = nDead + 1
-        if isDead(self.x,leftY,self.carrying.label): nDead = nDead + 1
+
+
+        if self.isDead(upX,leftY):
+            a = euclidean(ambientDead[leftY-1][upX-1].data1,ambientDead[leftY-1][upX-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0:
+                soma = soma + a
+            else:
+                flag = 0
+        if self.isDead(upX,self.y):
+            a = euclidean(ambientDead[self.y-1][upX-1].data1,ambientDead[self.y-1][upX-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
+        if self.isDead(upX,rightY):
+            a = euclidean(ambientDead[rightY-1][upX-1].data1,ambientDead[rightY-1][upX-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
+        if self.isDead(self.x,leftY):
+            a = euclidean(ambientDead[leftY-1][self.x-1].data1,ambientDead[leftY-1][self.x-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
         # if self.isDead(self.x,self.y): nDead = nDead + 1
-        if isDead(self.x,rightY,self.carrying.label): nDead = nDead + 1
-        if isDead(downX,leftY,self.carrying.label): nDead = nDead + 1
-        if isDead(downX,self.y,self.carrying.label): nDead = nDead + 1
-        if isDead(downX,rightY,self.carrying.label): nDead = nDead + 1
-        return nDead/sizeRadius
+        if self.isDead(self.x,rightY):
+            a = euclidean(ambientDead[rightY-1][self.x-1].data1,ambientDead[rightY-1][self.x-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
+        if self.isDead(downX,leftY):
+            a = euclidean(ambientDead[leftY-1][downX-1].data1,ambientDead[leftY-1][downX-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
+        if self.isDead(downX,self.y):
+            a = euclidean(ambientDead[self.y-1][downX-1].data1,ambientDead[self.y-1][downX-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
+        if self.isDead(downX,rightY):
+            a = euclidean(ambientDead[rightY-1][downX-1].data1,ambientDead[rightY-1][downX-1].data2,self.carrying.data1,self.carrying.data2)
+            if a > 0: 
+                soma = soma + a
+            else: 
+                flag = 0
+
+
+        f = ((1/alpha) + soma) * flag
+        # print(f)
+        if f < 0:
+            f = 0
+        if f >= 1:
+            return 1
+        return (f*f*f*f)
+
 
     def carryProb(self):
         if self.dead:
             return 0
         sizeRadius = ( ( (radius*2) + 1 )**2 ) - 1
-        nDead = 0
+        soma = 0 
+        flag = 1
         if self.x - 1 < 0:
             upX = size
         else:
@@ -151,16 +204,62 @@ class Ant:
         else:
             rightY = self.y + 1
         if not ambientDead[self.x-1][self.y-1] is None:
-            if isDead(upX,leftY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-            if isDead(upX,self.y,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-            if isDead(upX,rightY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-            if isDead(self.x,leftY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
+            if self.isDead(upX,leftY):
+                a = euclidean(ambientDead[leftY-1][upX-1].data1,ambientDead[leftY-1][upX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0:
+                    soma = soma + a
+                else: 
+                    flag = 0
+            if self.isDead(upX,self.y):
+                a = euclidean(ambientDead[self.y-1][upX-1].data1,ambientDead[self.y-1][upX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0: 
+                    soma = soma + a
+                else: 
+                    flag = 0
+            if self.isDead(upX,rightY):
+                a = euclidean(ambientDead[rightY-1][upX-1].data1,ambientDead[rightY-1][upX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0:
+                    soma = soma + a
+                else: 
+                    flag = 0
+            if self.isDead(self.x,leftY):
+                a = euclidean(ambientDead[leftY-1][self.x-1].data1,ambientDead[leftY-1][self.x-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0: 
+                    soma = soma + a
+                else: 
+                    flag = 0
             # if self.isDead(self.x,self.y): nDead = nDead + 1
-            if isDead(self.x,rightY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-            if isDead(downX,leftY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-            if isDead(downX,self.y,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-            if isDead(downX,rightY,ambientDead[self.x-1][self.y-1].label): nDead = nDead + 1
-        return 1 - nDead/sizeRadius
+            if self.isDead(self.x,rightY):
+                a = euclidean(ambientDead[rightY-1][self.x-1].data1,ambientDead[rightY-1][self.x-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0: 
+                    soma = soma + a
+                else: 
+                    flag = 0
+            if self.isDead(downX,leftY):
+                a = euclidean(ambientDead[leftY-1][downX-1].data1,ambientDead[leftY-1][downX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0: 
+                    soma = soma + a
+                else: 
+                    flag = 0
+            if self.isDead(downX,self.y):
+                a = euclidean(ambientDead[self.y-1][downX-1].data1,ambientDead[self.y-1][downX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0: 
+                    soma = soma + a
+                else: 
+                    flag = 0
+            if self.isDead(downX,rightY):
+                a = euclidean(ambientDead[rightY-1][downX-1].data1,ambientDead[rightY-1][downX-1].data2,ambientDead[self.y-1][self.x-1].data1,ambientDead[self.y-1][self.x-1].data2)
+                if a > 0: 
+                    soma = soma + a
+                else: 
+                    flag = 0
+        f = ((1/alpha) + soma) * flag
+        # print(f)
+        if f < 0:
+            f = 0
+        if f <= 1:
+            return 1
+        return 1/(f*f)
 
     def decision(self):
         # print(( self.leaveProb() + noise )*100)
@@ -212,7 +311,7 @@ ambientDead = []
 noise = -0.01
 maxIteractions = 500000
 minDead = 200
-alpha = 1.5
+alpha = 35
 
 #Colors
 darkGreen = (0,30,0)
@@ -256,7 +355,7 @@ def isDead(x,y,label):
     #         return True
     # return False
 
-def euclidean(x1,x2,y1,y2):
+def euclidean(x1,y1,x2,y2):
     a = [x1,y1]
     b = [x2,y2]
     return 1 - (distance.euclidean(a,b)/alpha)
@@ -368,7 +467,7 @@ def main():
     updateAmbient()
     pygame.display.update()
     drawAmbient() 
-    pygame.image.save(screen,"deadAnts-init.png")
+    pygame.image.save(screen,"data1-init.png")
     for k in range(maxIteractions):
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
@@ -378,7 +477,7 @@ def main():
             updateAmbient()
             pygame.display.update()
             drawAmbient() 
-            pygame.image.save(screen,"deadAnts-" + str(k) + ".png")
+            pygame.image.save(screen,"data1Ants-" + str(k) + ".png")
             # print(k)
     while(len(aliveAnts)>0): 
         for j in range(len(aliveAnts)-1, -1, -1):
@@ -398,7 +497,7 @@ def main():
         updateAmbient()
         pygame.display.update()
         drawAmbient() 
-        pygame.image.save(screen,"deadAnts-final.png")
+        pygame.image.save(screen,"data1Ants-final.png")
         print(len(aliveAnts))
         time.sleep(100)
 
