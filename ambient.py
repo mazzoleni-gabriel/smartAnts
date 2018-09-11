@@ -4,6 +4,7 @@ import time
 import sys, pygame
 import csv
 from pygame.locals import * 
+from scipy.spatial import distance
 
 class Ant:
     def __init__(self, size, prob, radius):
@@ -253,6 +254,9 @@ def isDead(x,y,label):
     #         return True
     # return False
 
+def euclidean(x1,x2,y1,y2):
+    return distance.euclidean([x1,y1],[x2,y2])
+
 def initAmbient():
     for i in range(size):
         line = []
@@ -276,7 +280,7 @@ def initAmbient():
         ants.append(ant)
         allAnts.append(ant)
 
-    # readFile()
+    readFile()
 
 
 
