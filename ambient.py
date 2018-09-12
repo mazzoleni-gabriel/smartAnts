@@ -317,19 +317,36 @@ ambient = []
 ambientDead = []
 noise = -0.01
 maxIteractions = 1000000
-minDead = 400
-alpha = 10
+minDead = 700
+alpha = 6.5
 sigma = 2
 
 #Colors
 darkGreen = (0,30,0)
-white = (200,200,200)
 darkBlue = (0,0,128)
 grey = (100,100,100)
+
 lightGrey = (150,150,150)
 yellow = (212,175,55)
 red = (255, 0, 0)
 green = (0,255,0)
+
+pink = (255, 0, 166)
+lightPink = (255, 163, 166)
+lightBlue = (143, 163, 230)
+purple = (216, 163, 230)
+darkYellow = (216, 163, 31)
+babyBlue = (176, 232, 255)
+white = (200,200,200)
+babierBlue = (2, 255, 255)
+orange = (253, 113, 20)
+shitYellow = (185, 162, 20)
+black = (0,0,0)
+brown = (70, 3, 20)
+marineblue = (53, 129, 126)
+
+colors = [lightGrey, yellow, red, green, pink, lightPink, lightBlue, purple, darkYellow, babyBlue, white, babierBlue, orange, shitYellow, black, brown, marineblue]
+
 
 #Moves
 UP = 'U'
@@ -342,10 +359,10 @@ screen = pygame.display.set_mode((1000,1000))
 #--------------------READ FILE----------------------
 def readFile():
     cont = 0;
-    with open('data2.csv', newline = '') as csvfile:
+    with open('data4.csv', newline = '') as csvfile:
         spamreader = csv.reader(csvfile, delimiter = ' ', quotechar=',')
         for row in spamreader:
-            linha = row[0].split(",")
+            linha = row[0].split("\t")
             ants[cont].data1 = float(linha[0])
             ants[cont].data2 = float(linha[1])
             ants[cont].label = int(linha[2])
@@ -431,9 +448,9 @@ def updateAmbient():
             ambientDead[ ants[i].y - 1][ ants[i].x - 1] = ants[i]
     for i in range(len(aliveAnts)):
         if not aliveAnts[i].carrying is None:
-            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 6
+            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 19
         else:
-            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 5
+            ambient[ aliveAnts[i].y-1 ][ aliveAnts[i].x-1 ] = 18
 
 
     # for k in range(nAnts):
@@ -454,17 +471,19 @@ def drawAmbient():
     screen.fill( darkGreen )
     for i in range(size):
         for j in range(size):
-            if ambient[i][j] == 5:
+            if ambient[i][j] == 18:
                 pygame.draw.rect(screen, darkBlue, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-            if ambient[i][j] == 1:
-                pygame.draw.rect(screen, grey, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-            if ambient[i][j] == 2:
-                pygame.draw.rect(screen, yellow, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-            if ambient[i][j] == 3:  
-                pygame.draw.rect(screen, red, (i*1000/size,j*1000/size,1000/size,1000/size), 0)  
-            if ambient[i][j] == 4:
-                pygame.draw.rect(screen, green, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
-            if ambient[i][j] == 6:
+            # if ambient[i][j] == 1:
+            #     pygame.draw.rect(screen, grey, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            # if ambient[i][j] == 2:
+            #     pygame.draw.rect(screen, yellow, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            # if ambient[i][j] == 3:  
+            #     pygame.draw.rect(screen, red, (i*1000/size,j*1000/size,1000/size,1000/size), 0)  
+            # if ambient[i][j] == 4:
+            #     pygame.draw.rect(screen, green, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            if ambient[i][j] >= 1 and ambient[i][j] <= 17:
+                pygame.draw.rect(screen, colors[ambient[i][j]+1], (i*1000/size,j*1000/size,1000/size,1000/size), 0)
+            if ambient[i][j] == 19:
                 pygame.draw.rect(screen, darkBlue, (i*1000/size,j*1000/size,1000/size,1000/size), 0)
                 pygame.draw.rect(screen, lightGrey, (i*1000/size + 200/size,j*1000/size + 200/size,600/size,600/size), 0)
 
@@ -477,17 +496,17 @@ def main():
     updateAmbient()
     pygame.display.update()
     drawAmbient() 
-    pygame.image.save(screen,"data1-init.png")
+    pygame.image.save(screen,"data3-init.png")
     for k in range(maxIteractions):
         for i in range(len(aliveAnts)):
             aliveAnts[i].randMove()
             aliveAnts[i].decision()
             updateDead()
-        if k%100000 == 0:
+        if k%50000 == 0:
             updateAmbient()
             pygame.display.update()
             drawAmbient() 
-            pygame.image.save(screen,"data1Ants-" + str(k) + ".png")
+            pygame.image.save(screen,"data3Ants-" + str(k) + ".png")
             # print(k)
     while(len(aliveAnts)>0): 
         for j in range(len(aliveAnts)-1, -1, -1):
@@ -507,7 +526,7 @@ def main():
         updateAmbient()
         pygame.display.update()
         drawAmbient() 
-        pygame.image.save(screen,"data1Ants-final.png")
+        pygame.image.save(screen,"data3Ants-final.png")
         print(len(aliveAnts))
         time.sleep(100)
 
